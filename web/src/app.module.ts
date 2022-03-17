@@ -53,21 +53,6 @@ import { AppService } from './app.service';
       }),
       inject: [ConfigService],
     }),
-    ClientsModule.register([
-      {
-        name: 'APPS_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'apps_client_id',
-            brokers: [process.env.KAFKA_URL],
-          },
-          consumer: {
-            groupId: 'apps_consumer',
-          },
-        },
-      },
-    ]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'assets'),
     }),

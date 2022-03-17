@@ -8,10 +8,10 @@ import {
 } from '@nestjs/websockets';
 import { Inject, Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import { ClientKafka } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection, getConnection } from 'typeorm';
+import { Kafka } from 'kafkajs';
 
 @WebSocketGateway({
   cors: {
@@ -21,18 +21,21 @@ import { Connection, getConnection } from 'typeorm';
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  @Inject('APPS_SERVICE') private client: ClientKafka;
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
+  private kafka = new Kafka({
+    clientId: 'web',
+    brokers: [process.env.KAFKA_URL],
+  });
+  private consumer = this.kafka.consumer({ groupId: 'process.payload.reply' });
+  private producer = this.kafka.producer();
 
   @SubscribeMessage('message')
   async handleMessage(client: Socket, payload: string): Promise<void> {
-    console.log(payload, 'Line #28 app.gateway.ts');
-    // const x = await getConnection('sakila_1').query('Select * from users');
-    const processedPayload = await firstValueFrom(
-      this.client.send('process.payload', payload),
-    );
-    this.server.emit('message', processedPayload);
+    await this.producer.send({ 
+      topic: 'process.payload',
+      messages: [{ value: payload }],
+    })
   }
 
   afterInit(server: Server) {
@@ -48,11 +51,24 @@ export class AppGateway
   }
 
   async onModuleInit() {
-    this.client.subscribeToResponseOf('process.payload');
-    await this.client.connect();
+    console.log('xcvoiu', 'Line #53 app.gateway.ts');
+    
+    await this.producer.connect();
+    await this.consumer.connect();
+    await this.consumer.subscribe({ topic: 'process.payload.reply', fromBeginning: false });
+    await this.consumer.run({
+      eachMessage: async ({ topic, message }) => {
+        this.logger.log(`Got message from ${topic}`);
+        console.log(message.value.toString(), 'Line #62 app.gateway.ts');
+        
+        this.server.emit('message', message.value.toString());
+        this.logger.log(`Message detail ${message.value}`);
+      },
+    });
   }
 
   async onModuleDestroy() {
-    await this.client.close();
+    await this.producer.disconnect();
+    await this.consumer.disconnect();
   }
 }
