@@ -6,6 +6,7 @@ COPY package.json ./
 
 # Install NPM dependencies for function
 RUN yarn install
-COPY ./dist/ ./
+COPY ./ ./
+RUN yarn build
 
-CMD ["node", "main.js"]
+CMD ["node", "dist/main.js"]

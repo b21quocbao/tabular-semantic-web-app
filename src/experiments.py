@@ -28,6 +28,8 @@ from src.semantic_parser.learn_framework import EncoderDecoderLFramework
 from src.trans_checker.args import args as cs_args
 import src.utils.utils as utils
 
+from kafka import KafkaConsumer, KafkaProducer
+
 import torch
 # if not args.data_parallel:
 #     torch.cuda.set_device('cuda:{}'.format(args.gpu))
@@ -347,12 +349,11 @@ def demo(args):
     else:
         t2sql = Text2SQLWrapper(args, cs_args, schema)
 
-    sys.stdout.write('Enter a natural language question: ')
-    sys.stdout.write('> ')
-    sys.stdout.flush()
-    text = sys.stdin.readline()
-
-    while text:
+    sys.stdout.write('Started a natural language question!!!!!')
+    consumer = KafkaConsumer('process.payload', bootstrap_servers='localhost:9091', group_id='my-group-1234')
+    producer = KafkaProducer(bootstrap_servers='localhost:9091')
+    for msg in consumer:
+        text = msg.value.decode('utf-8')
         output = t2sql.process(text, schema.name)
         translatable = output['translatable']
         sql_query = output['sql_query']
@@ -362,10 +363,8 @@ def demo(args):
         print('SQL: {}'.format(sql_query))
         print('Confusion span: {}'.format(confusion_span))
         print('Replacement span: {}'.format(replacement_span))
-        sys.stdout.flush()
-        sys.stdout.write('\nEnter a natural language question: ')
-        sys.stdout.write('> ')
-        text = sys.stdin.readline()
+        producer.send('process.payload.reply', str.encode('SQL: {}'.format(sql_query)))
+
 
 
 def run_experiment(args):
