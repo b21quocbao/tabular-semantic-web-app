@@ -60,9 +60,24 @@ export class AppGateway
       eachMessage: async ({ topic, message }) => {
         this.logger.log(`Got message from ${topic}`);
         console.log(message.value.toString(), 'Line #62 app.gateway.ts');
-        
-        this.server.emit('message', message.value.toString());
-        this.logger.log(`Message detail ${message.value}`);
+        const res = JSON.parse(message.value.toString());
+        if (res.length == 0) {
+          this.server.emit('message', JSON.stringify(['Untranslatable']));
+          this.logger.log(`Message detail ${message.value}`);
+        } else {
+          const sockets = [];
+          for (let i = 0; i < res.length; i += 2) {
+            if (res[i] && res[i + 1]) {
+              try {
+                const data = JSON.stringify(await getConnection(res[i]).query(res[i + 1]));
+                sockets.push(`Found schema: ${res[i]}. Query: ${res[i + 1]}. Data: ${data.substring(0, 100)}...`)
+              } catch (err) {
+                sockets.push(`Found schema: ${res[i]}. Query: ${res[i + 1]}. Data: Error: ${err.message}!!!`)
+              }
+            }
+          }
+          this.server.emit('message', JSON.stringify(sockets));
+        }
       },
     });
   }

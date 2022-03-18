@@ -44,12 +44,14 @@
         // responses
         var templateResponse = Handlebars.compile( $("#message-response-template").html());
         
-        socket.once('message', message => {
-          var contextResponse = { 
-            response: message,
-            time: this.getCurrentTime()
-          };
-          this.$chatHistoryList.append(templateResponse(contextResponse));
+        socket.once('message', messages => {
+          for (const message of JSON.parse(messages)) {
+            var contextResponse = { 
+              response: message,
+              time: this.getCurrentTime()
+            };
+            this.$chatHistoryList.append(templateResponse(contextResponse));
+          }
           this.scrollToBottom();
         })
       }

@@ -19,3 +19,5 @@ scipy
 
 # demo use only
 sqlalchemy==1.3.20
+kafka-python
+docker-compose

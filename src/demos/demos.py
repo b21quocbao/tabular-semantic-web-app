@@ -58,7 +58,7 @@ def demo_preprocess(args, example, vocabs=None, schema_graph=None):
 
 
 class Text2SQLWrapper(object):
-    def __init__(self, args, cs_args, schema, ensemble_model_dirs=None):
+    def __init__(self, args, cs_args, schemas, ensemble_model_dirs=None):
         self.args = args
         self.text_tokenize, _, _, self.tu = tok.get_tokenizers(args)
 
@@ -85,8 +85,7 @@ class Text2SQLWrapper(object):
                 sps[i].eval()
             self.semantic_parsers = sps
             self.model_ensemble = [sp.mdl for sp in sps]
-
-        if schema is not None:
+        for schema in schemas:
             self.add_schema(schema)
 
         # When generating SQL in execution order, cache reordered SQLs to save time

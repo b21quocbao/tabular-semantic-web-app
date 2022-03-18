@@ -32,8 +32,8 @@ Our implementation has been tested using Pytorch 1.7 and Cuda 11.0 with a single
 git clone https://github.com/salesforce/TabularSemanticParsing
 cd TabularSemanticParsing
 
-pip install torch torchvision
-python3 -m pip install -r requirements.txt
+pip install -r requirements.txt
+cd web && docker-compose --env-file .env up -d --build
 ```
 
 ### Set up Environment

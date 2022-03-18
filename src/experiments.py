@@ -326,44 +326,53 @@ def demo(args):
         return
     else:
         db_name = args.demo_db
-    db_path = os.path.join(args.db_dir, db_name, '{}.sqlite'.format(db_name))
-    schema = SchemaGraph(db_name, db_path=db_path)
-    if db_name == 'covid_19':
-        in_csv = os.path.join(data_dir, db_name, '{}.csv'.format(db_name))
-        in_type = os.path.join(data_dir, db_name, '{}.types'.format(db_name))
-        schema.load_data_from_csv_file(in_csv, in_type)
-    else:
-        # TODO: currently the demo is configured for the Spider dataset.
-        import json
-        in_json = os.path.join(args.data_dir, 'tables.json')
-        with open(in_json) as f:
-            tables = json.load(f)
-        for table in tables:
-            if table['db_id'] == db_name:
-                break
-        schema.load_data_from_spider_json(table)
-    schema.pretty_print()
+    schemas = []
+    for db_name in ['car_1', 'flight_4', 'world_1', 'store_1', 'college_2']:
+        db_path = os.path.join(args.db_dir, db_name, '{}.sqlite'.format(db_name))
+        schema = SchemaGraph(db_name, db_path=db_path)
+        if db_name == 'covid_19':
+            in_csv = os.path.join(data_dir, db_name, '{}.csv'.format(db_name))
+            in_type = os.path.join(data_dir, db_name, '{}.types'.format(db_name))
+            schema.load_data_from_csv_file(in_csv, in_type)
+        else:
+            # TODO: currently the demo is configured for the Spider dataset.
+            import json
+            in_json = os.path.join(args.data_dir, 'tables.json')
+            with open(in_json) as f:
+                tables = json.load(f)
+            for table in tables:
+                if table['db_id'] == db_name:
+                    break
+            schema.load_data_from_spider_json(table)
+        schema.pretty_print()
+        schemas.append(schema)
 
     if args.ensemble_inference:
-        t2sql = Text2SQLWrapper(args, cs_args, schema, ensemble_model_dirs=ensemble_model_dirs)
+        t2sql = Text2SQLWrapper(args, cs_args, schemas, ensemble_model_dirs=ensemble_model_dirs)
     else:
-        t2sql = Text2SQLWrapper(args, cs_args, schema)
+        t2sql = Text2SQLWrapper(args, cs_args, schemas)
 
     sys.stdout.write('Started a natural language question!!!!!')
     consumer = KafkaConsumer('process.payload', bootstrap_servers='localhost:9091', group_id='my-group-1234')
     producer = KafkaProducer(bootstrap_servers='localhost:9091')
     for msg in consumer:
-        text = msg.value.decode('utf-8')
-        output = t2sql.process(text, schema.name)
-        translatable = output['translatable']
-        sql_query = output['sql_query']
-        confusion_span = output['confuse_span']
-        replacement_span = output['replace_span']
-        print('Translatable: {}'.format(translatable))
-        print('SQL: {}'.format(sql_query))
-        print('Confusion span: {}'.format(confusion_span))
-        print('Replacement span: {}'.format(replacement_span))
-        producer.send('process.payload.reply', str.encode('SQL: {}'.format(sql_query)))
+        res = []
+        for schema in schemas:
+            text = msg.value.decode('utf-8')
+            output = t2sql.process(text, schema.name)
+            translatable = output['translatable']
+            sql_query = output['sql_query']
+            confusion_span = output['confuse_span']
+            replacement_span = output['replace_span']
+            print('Schema name: {}'.format(schema.name))
+            print('Translatable: {}'.format(translatable))
+            print('SQL: {}'.format(sql_query))
+            print('Confusion span: {}'.format(confusion_span))
+            print('Replacement span: {}'.format(replacement_span))
+            if (translatable):
+                res.append(schema.name)
+                res.append(sql_query)
+        producer.send('process.payload.reply', str.encode(json.dumps(res, separators=(',', ':'))))
 
 
 
