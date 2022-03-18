@@ -50,9 +50,7 @@ export class AppGateway
     this.logger.log(`Client connected: ${client.id}`);
   }
 
-  async onModuleInit() {
-    console.log('xcvoiu', 'Line #53 app.gateway.ts');
-    
+  async onModuleInit() {    
     await this.producer.connect();
     await this.consumer.connect();
     await this.consumer.subscribe({ topic: 'process.payload.reply', fromBeginning: false });
@@ -70,7 +68,7 @@ export class AppGateway
             if (res[i] && res[i + 1]) {
               try {
                 const data = JSON.stringify(await getConnection(res[i]).query(res[i + 1]));
-                sockets.push(`Found schema: ${res[i]}. Query: ${res[i + 1]}. Data: ${data.substring(0, 100)}...`)
+                sockets.push(`Found schema: ${res[i]}. Query: ${res[i + 1]}. Data: ${data.substring(0, 200)}...`)
               } catch (err) {
                 sockets.push(`Found schema: ${res[i]}. Query: ${res[i + 1]}. Data: Error: ${err.message}!!!`)
               }
