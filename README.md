@@ -25,120 +25,20 @@ Our model takes a natural language utterance and a database (schema + field pick
 
 ## Quick Start
 
-### Install Dependencies
+### Start up AI model
 
-Our implementation has been tested using Pytorch 1.7 and Cuda 11.0 with a single GPU.
 ```
 git clone https://github.com/salesforce/TabularSemanticParsing
 cd TabularSemanticParsing
-
 pip install -r requirements.txt
+./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0 --checkpoint_path model/bridge-spider-bert-large-ems-70-1-exe-68-2.tar
+```
+
+### Set up Web
+```
 cd web && docker-compose --env-file .env up -d --build
 ```
 
-### Set up Environment
-```
-export PYTHONPATH=`pwd` && python -m nltk.downloader punkt
-```
-
-### Process Data
-
-#### Spider
-
-Download the [official data release](https://drive.google.com/u/1/uc?export=download&confirm=pft3&id=1_AckYkinAnhqmRQtGsQgUKAnTHxxX5J0) and unzip the folder. Manually merge `spider/train_spider.json` with `spider/train_others.json` into a single file `spider/train.json`.
-```
-mv spider data/ 
-
-# Data Repair (more details in section 4.3 of paper)
-python3 data/spider/scripts/amend_missing_foreign_keys.py data/spider
-
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --process_data 0
-```
-
-#### WikiSQL
-
-Download the [official data release](https://github.com/salesforce/WikiSQL/blob/master/data.tar.bz2).
-```
-wget https://github.com/salesforce/WikiSQL/raw/master/data.tar.bz2
-tar xf data.tar.bz2 -C data && mv data/data data/wikisql1.1
-./experiment-bridge.sh configs/bridge/wikisql-bridge-bert-large.sh --process_data 0
-```
-
-The processed data will be stored in a separate pickle file. 
-
-### Train 
-Train the model using the following commands. The checkpoint of the best model will be stored in a directory [specified by the hyperparameters](https://github.com/salesforce/TabularSemanticParsing/blob/25b154d3dc0e25922822433400c453274d38b8c8/src/data_processor/path_utils.py#L309) in the configuration file. 
-
-#### Spider
-```
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --train 0
-```
-
-#### WikiSQL
-```
-./experiment-bridge.sh configs/bridge/wikisql-bridge-bert-large.sh --train 0
-```
-
-### Inference
-Decode SQL predictions from pre-trained models. The following commands run inference with the checkpoints stored in the directory specified by the hyperparameters in the configuration file. 
-
-#### Spider
-```
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0
-```
-
-#### WikiSQL
-```
-./experiment-bridge.sh configs/bridge/wikisql-bridge-bert-large.sh --inference 0
-```
-**Note:** 
-1. Add the `--test` flag to the above commands to obtain the test set evaluation results on the corresponding dataset. This flag is invalid for Spider, as its test set is hidden.
-2. Add the `--checkpoint_path [path_to_checkpoint_tar_file]` flag to decode using a checkpoint that's not stored in the default location.
-3. Evaluation metrics will be printed out at the end of decoding. The WikiSQL evaluation takes some time because it computes execution accuracy.
-
-<!--You can download two of our pre-trained checkpoints for Spider here:
-<table>
-   <tr>
-      <td><strong></strong></td>
-      <td>Spider E-SM (dev)</td>
-      <td>Spider Ex-Acc (dev)</td>
-      <td>Spider E-SM (test)</td>
-      <td>Spider Ex-Acc (test)</td>
-   </tr>
-   <tr>
-      <td>[Checkpoint-1]()</td>
-      <td>70.1</td>
-      <td>68.2</td>
-      <td>65.0</td>
-      <td>64.3</td>
-   </tr>
-   <tr>
-      <td>[Checkpoint-2]()</td>
-      <td>69.1</td>
-      <td>67.1</td>
-      <td>--</td>
-      <td>--</td>
-   </tr>
-</table>-->
-
-### Inference with Model Ensemble
-To decode with model ensemble, first list the checkpoint directories of the individual models in the [ensemble model configuration file](src/semantic_parser/ensemble_configs.py), then run the following command(s).
-
-#### Spider
-```
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --ensemble_inference 0
-```
-
-### Commandline Demo
-You can interact with a pre-trained checkpoint through the commandline using the following commands:
-
-#### Spider
-```
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --demo 0 --demo_db [db_name] --checkpoint_path [path_to_checkpoint_tar_file]
-```
-
-### Hyperparameter Changes
-To change the hyperparameters and other experiment set up, start from the [configuration files](configs).
 
 ## Pre-trained Checkpoints
 
