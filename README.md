@@ -80,7 +80,9 @@ pip install -r requirements.txt
 
 ### Start Web
 ```
-cd web && docker-compose --env-file .env up -d --build
+cd web
+cp .env.example .env
+docker-compose --env-file .env up -d --build
 ```
 
 ## Citation
