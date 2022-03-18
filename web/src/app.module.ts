@@ -14,13 +14,9 @@ import { AppService } from './app.service';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        type: process.env.DB_TYPE as any,
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT),
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: 'sakila_1',
-        name: 'sakila_1',
+        type: 'sqlite',
+        database: './db/car_1.sqlite',
+        name: 'car_1',
         logging: true,
       }),
       inject: [ConfigService],
@@ -28,12 +24,28 @@ import { AppService } from './app.service';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        type: process.env.DB_TYPE as any,
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT),
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: 'store_1',
+        type: 'sqlite',
+        database: './db/flight_4.sqlite',
+        name: 'flight_4',
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'sqlite',
+        database: './db/world_1.sqlite',
+        name: 'world_1',
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'sqlite',
+        database: './db/store_1.sqlite',
         name: 'store_1',
         logging: true,
       }),
@@ -42,12 +54,8 @@ import { AppService } from './app.service';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        type: process.env.DB_TYPE as any,
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT),
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: 'college_2',
+        type: 'sqlite',
+        database: './db/college_2.sqlite',
         name: 'college_2',
         logging: true,
       }),
