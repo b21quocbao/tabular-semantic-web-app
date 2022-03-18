@@ -25,7 +25,7 @@ Our model takes a natural language utterance and a database (schema + field pick
 
 ## Quick Start
 
-### Start up AI model
+### Start AI model
 
 ```
 git clone https://github.com/salesforce/TabularSemanticParsing
@@ -34,7 +34,7 @@ pip install -r requirements.txt
 ./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0 --checkpoint_path model/bridge-spider-bert-large-ems-70-1-exe-68-2.tar
 ```
 
-### Set up Web
+### Start Web
 ```
 cd web && docker-compose --env-file .env up -d --build
 ```
