@@ -23,22 +23,6 @@ Our model takes a natural language utterance and a database (schema + field pick
 - **Translating:** The hybrid sequence is passed through the BRIDGE model, which output raw program sequences with probability scores via beam search.
 - **Postprocessing:** The raw program sequences are passed through a SQL checker, which verifies its syntactical correctness and schema consistency. Sequences that failed to pass the checker are discarded from the output.
 
-## Quick Start
-
-### Start AI model
-
-```
-git clone https://github.com/b21quocbao/tabular-semantic-web-app
-cd tabular-semantic-web-app
-pip install -r requirements.txt
-./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0 --checkpoint_path model/bridge-spider-bert-large-ems-70-1-exe-68-2.tar
-```
-
-### Start Web
-```
-cd web && docker-compose --env-file .env up -d --build
-```
-
 
 ## Pre-trained Checkpoints
 
@@ -82,6 +66,22 @@ gunzip data/spider/dev.eo.pred.restored.pkl.gz
 ```
 ./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0 --checkpoint_path model/bridge-spider-bert-large-ems-70-1-exe-68-2.tar
 ```-->
+
+## Quick Start
+
+### Start AI model
+
+```
+git clone https://github.com/b21quocbao/tabular-semantic-web-app
+cd tabular-semantic-web-app
+pip install -r requirements.txt
+./experiment-bridge.sh configs/bridge/spider-bridge-bert-large.sh --inference 0 --checkpoint_path model/bridge-spider-bert-large-ems-70-1-exe-68-2.tar
+```
+
+### Start Web
+```
+cd web && docker-compose --env-file .env up -d --build
+```
 
 ## Citation
 If you find the resource in this repository helpful, please cite
